@@ -1,0 +1,299 @@
+\documentclass[aspectratio=169, xcolor=dvipsnames, 11pt]{beamer}
+\usetheme{moloch}
+\molochset{
+  progressbar = frametitle,
+  block = fill
+}
+% Use beamer's page number in head/foot template
+\setbeamertemplate{footline}[frame number]
+\setbeamersize{text margin left=0.5cm,text margin right=0.5cm}
+
+% from https://tex.stackexchange.com/a/441705/36296
+\makeatletter
+\addtobeamertemplate{date}{\centering}{}
+\addtobeamertemplate{institute}{\centering}{}
+\patchcmd{\beamer@@tmpl@title}{\raggedright}{\centering}{}{}
+\patchcmd{\beamer@@tmpl@author}{\raggedright}{\centering}{}{}
+\setlength{\moloch@titleseparator@linewidth}{2pt}
+\setlength{\moloch@progressinheadfoot@linewidth}{1.5pt}
+\setbeamercolor{progress bar}{fg=FGVBlue, bg=white}
+\makeatother
+
+% ----- Packages -----
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{xcolor} % For colored bullets
+\usepackage{appendixnumberbeamer}
+\usepackage{emoji}
+\setemojifont{Apple Color Emoji}
+% TikZ for decorative braces in slides
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing,positioning,calc}
+
+% ----- Metadata -----
+\title[]{ML in Economics and Finance: Where do We Go Now? - Part I}
+
+\author[]{
+  \textbf{Raul Riva}
+}
+\institute[]{
+  \textcolor{FGVBlue}{FGV EPGE}
+  \vspace{0.75cm}
+}
+\date[]{December, 2025 \\ \vspace{1cm} INSPER - São Paulo}
+
+% ----- Custom commands -----
+\newcommand{\R}{{\mathbb{R}}}
+\renewcommand{\Pr}{{\mathbb{P}}}
+\newcommand{\E}{{\mathbb{E}}}
+\newcommand{\var}{{\mathrm{var}}}
+\newtheorem{prop}[theorem]{Proposition}
+
+% ----- Defining colors -----
+\usepackage[dvipsnames]{xcolor}
+\definecolor{slateblue}{RGB}{45, 62, 80}
+\definecolor{KelloggPurple}{HTML}{4E2A84}
+\setbeamercolor{palette primary}{bg=slateblue, fg=white}
+\definecolor{FGVBlue}{RGB}{0, 114, 188}
+\setbeamercolor{title separator}{bg=FGVBlue, fg=FGVBlue}
+\setbeamercolor{background canvas}{bg=white}
+
+% ----- Hyperlinks and Bibliography -----
+%\usepackage[backend=biber,style=authoryear]{biblatex}
+%\addbibresource{references.bib}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=FGVBlue,
+  urlcolor=FGVBlue,
+  citecolor=FGVBlue
+} % close \hypersetup
+
+% Make section titles slateblue
+\makeatletter
+\let\oldsection\section
+\renewcommand{\section}[2][]{%
+    \if\relax\detokenize{#1}\relax
+        \oldsection{\textcolor{slateblue}{#2}}%
+    \else
+        \oldsection[#1]{\textcolor{slateblue}{#2}}%
+    \fi
+}
+\makeatother
+%---------------- Document Start ----------------%
+\begin{document}
+
+%---------------- Title Slide ----------------%
+% Title page without margin changes
+\begin{frame}[plain] % Use plain to avoid navigation symbols
+  \titlepage
+\end{frame}
+
+\section{Intro}
+%---------------- Intro ----------------%
+\begin{frame}{Who is this guy?}
+    \begin{itemize}\itemsep1em
+        \item I have just joined \textcolor{FGVBlue}{FGV EPGE} as an Assistant Professor;
+        \item I got my PhD in Finance at \textcolor{KelloggPurple}{Northwestern University};
+        \item Asset Pricing + Macro-Finance + Econometrics;
+        \item Some of my papers use ML methods in different contexts;
+        \end{itemize}
+        \pause
+        \vspace{1cm}
+        \begin{center}
+        \fbox{\parbox{0.9\textwidth}{\centering
+        \alert{I am \textbf{not} an ML developer, but maybe a mildly sophisticated economist consumer}
+        }}
+        \end{center}
+\end{frame}
+
+\begin{frame}{Where are we?}
+    \begin{itemize}\itemsep0.6em
+            \item Last 20-30 years: explosion of computation power and popularization of ML techniques;
+            \item Last 15 years: we economists imported several techniques from CS and Stats;
+            \item Many challenges in this translation:
+            \vspace{-0.5cm}
+                \begin{columns}[t]
+                    \begin{column}{0.44\textwidth}
+                        \begin{itemize}\itemsep0.3em
+                            \item Causality vs pattern recognition;
+                            \item Interpretability;
+                        \end{itemize}
+                    \end{column}
+                    \begin{column}{0.44\textwidth}
+                        \begin{itemize}\itemsep0.5em
+                            \item Sophisticated notions of equilibrium;
+                            \item Time series dynamics;
+                        \end{itemize}
+                    \end{column}
+                \end{columns}
+        \end{itemize}
+    \pause
+    \vspace{0.75cm}
+    \textbf{Right now}:
+    \begin{itemize}\itemsep0.6em
+        \item Better understanding of the limitations of "plug and play" ML;
+        \item[\textcolor{ForestGreen}{\bullet}] Great stuff: new hybrid methods designed by and for economists;
+        \item[\textcolor{Red}{\bullet}] Bad stuff: we are flooded with tutorials, books, videos, bootcamps...
+    \end{itemize}   
+\end{frame}
+
+\begin{frame}{Where do we go now?}
+    \begin{itemize}
+        \item The Econ/Finance forecasting crowd was really fast in adopting ML...
+        \item But what else? What is worth knowing about ML in Econ and Finance?
+    \end{itemize}
+\pause
+\vspace{0.5cm}
+    \textbf{What I will do}:
+    \begin{itemize}
+        \item My own economist-crafted definition of ML methods and how to think about them;
+        \item Three very cool agendas where ML can help economists
+        \item Causality in high dimensions, seriously heterogeneous treatment effects, and solving large-scale GE models;
+    \end{itemize}
+\pause
+\vspace{0.5cm}
+    \textbf{What I will \alert{\underline{not}} do}:
+    \begin{itemize}
+        \item Teach you how to code;
+        \pause
+        \item Pretend I know how to prove the complicated theorems and walk you through proofs;
+        \pause
+        \item Lie to you and say you can easily perform any of this in Stata! \emoji{face-with-rolling-eyes} 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Who is this for?}
+    \begin{itemize}
+        \item Students starting their empirical research agendas;
+        \item Fellow empirical researchers trying to grasp what kind of ML tools might be useful;
+        \item Someone coming from Stats or CS into Economics;
+    \end{itemize}
+\pause
+\vspace{0.5cm}
+\textbf{Who is this \textcolor{red}{\underline{not}} for?}
+\begin{itemize}
+    \item Super sophisticated economists already deploying these techniques everywhere;
+    \item Hardcore econometricians looking for open theoretical problems;
+\end{itemize}
+\pause
+\vspace{0.5cm}
+\begin{center}
+        \fbox{\parbox{0.99\textwidth}{\centering
+        DISCLAIMER: These are \textbf{my} own views, based on \textbf{my} experience, and \textbf{my} own readings.\\ Other people will disagree.
+        }}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Flight Plan {\normalfont\emoji{airplane}}}
+    \begin{enumerate}
+        \item What is ML, anyway?\tikz[remember picture,baseline] \node (it1) {};
+        \item Causality in High Dimensions\tikz[remember picture,baseline] \node (it2) {};
+        \item (Seriously) Heterogeneous Treatment Effects\tikz[remember picture,baseline] \node (it3) {};
+        \item Solving Large-Scale General Equilibrium Models\tikz[remember picture,baseline] \node (it4) {};
+    \end{enumerate}
+
+    % Decorative braces indicating Today / Tomorrow on the right
+    \begin{tikzpicture}[remember picture,overlay]
+        \coordinate (todayAnchor) at ($(it2.east)+(0.45cm,-0.2cm)$);
+        \coordinate (tomorrowAnchor) at ($(it4.east)+(0.45cm,-0.2cm)$);
+
+        \draw[decorate,decoration={brace,amplitude=6pt,mirror},line width=1pt]
+            (todayAnchor |- it2.south) -- ($(todayAnchor |- it1.north)+(0,0.3cm)$)
+            node[midway,right=12pt]{\textbf{Today}};
+
+        \draw[decorate,decoration={brace,amplitude=6pt,mirror},line width=1pt]
+            (tomorrowAnchor |- it4.south) -- ($(tomorrowAnchor |- it3.north)+(0,0.3cm)$)
+            node[midway,right=12pt]{\textbf{Tomorrow}};
+    \end{tikzpicture}
+    \pause
+    \vspace{0.5cm}
+    \begin{center}
+        	\textbf{\textcolor{FGVBlue}{Please bring questions at any time!}}
+    \end{center}
+\end{frame}
+
+\begin{frame}[standout]
+    Questions?
+\end{frame}
+
+\section{A General Framework}
+\begin{frame}{What is \textit{Machine Learning}?}
+    \begin{itemize}\itemsep1em
+        \item Different fields will have different definitions: CS, Stats, Operations Research, ...
+        \item Many types: Supervised, Unsupervised, Reinforcement Learning, Deep Learning, ...
+        \item More buzzwords = better consulting gigs! \emoji{money-mouth-face}
+        \pause
+        \item For today and tomorrow, everything will be about \textbf{Supervised Learning};
+        \pause
+        \item I will be brave enough and provide the one I think is really useful for Economists:
+    \end{itemize}
+    \pause
+    \vspace{0.6cm}
+    \begin{center}
+        \fbox{\parbox{0.95\textwidth}{\centering
+        \alert{(Supervised) \textbf{Machine Learning} is a set of tools that enable computationally-feasible data-driven search over high-dimensional functional spaces.}
+        }}
+    \end{center}
+\end{frame}
+
+\begin{frame}{A General Framework}
+\begin{equation*}
+    y = f(\boldsymbol{x}) + \varepsilon
+\end{equation*}
+\begin{itemize}
+    \item $y \in \mathbb{R}^k$ is some "target" or "outcome";
+    \item $\boldsymbol{x} \in \R^p$ is a vector of "features", or "predictors", or "covariates";
+    \item $f: \R^p \to \R^k$ is some unknown function;
+    \item $\varepsilon$ is some unobserved noise because the world is messy;
+\end{itemize}
+\pause
+\vspace{0.5cm}
+\textbf{Question:} given a function space $\mathcal{F}$, how to find $\hat{f} \in \mathcal{F}$ that approximates $f$ well?
+\begin{itemize}
+    \item Collect data $\{(y_1, \boldsymbol{x}_1), \ldots, (y_n, \boldsymbol{x}_n)\}$;
+    \item Define some notion of "approximates well" $\implies$ (a loss function);
+    \item Be explicit about $\mathcal{F}$;
+    \item Be explicit about your optimization mechanism;
+\end{itemize}
+\end{frame}
+
+\begin{frame}{You are already doing ML!}
+Consider an outcome $y_i$, and a set of covariates $\boldsymbol{x}_i$ for $i=1,\ldots,n$:
+\begin{equation*}
+    y_i = \alpha + \boldsymbol{x}_i'\boldsymbol{\beta} + \varepsilon_i
+\end{equation*}
+\begin{itemize}
+    \item This is a linear regression model;
+    \item The function space $\mathcal{F}$ is the set of all affine functions of the treatment and covariates;
+    \item The loss function is the MSE: $\mathcal{L}(y_i, \hat{y}_i) = (y_i - \hat{y}_i)^2$;
+    \item OLS: minimize a convex loss function over the space of parameters;
+\end{itemize}
+\pause
+\vspace{0.5cm}
+\textbf{Conclusion:} Linear regression is a (very simple) ML method! But there is so much more...
+    
+\end{frame}
+
+\begin{frame}{Hold on... Isn't Machine Learning just Non-Parametric Estimation?}
+\begin{itemize}
+    \item The general framework I used could be used in a non-parametric estimation class...
+    \item Why do we need new tools? We already have the good and old kernel regression!
+    \pause
+    \item The "curse of dimensionality" kicks in!
+    \begin{itemize}
+        \item We need exponentially more data as $p$ grows;;
+        \item Kernel methods become useless when $p$ is even moderately large (e.g., $p>5$);
+    \end{itemize}
+    \pause
+    
+\end{itemize}
+    
+\end{frame}
+
+\section{Causality in High Dimensions}
+
+\end{document}
