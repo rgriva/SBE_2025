@@ -283,15 +283,39 @@ Consider an outcome $y_i$, and a set of covariates $\boldsymbol{x}_i$ for $i=1,\
     \item The general framework I used could be used in a non-parametric estimation class...
     \item Why do we need new tools? We already have the good and old kernel regression!
     \pause
-    \item The "curse of dimensionality" kicks in!
-    \begin{itemize}
-        \item We need exponentially more data as $p$ grows;;
-        \item Kernel methods become useless when $p$ is even moderately large (e.g., $p>5$);
-    \end{itemize}
-    \pause
-    
+    \item Well... there is the curse of dimensionality! If $p \approx 6$, you are already in trouble!
 \end{itemize}
-    
+\pause
+\vspace{0.2cm}
+\begin{columns}[T,onlytextwidth]
+    \column{0.46\textwidth}
+    \vspace{-0.1cm}
+    \begin{center}
+        \textbf{OLS}
+    \end{center}
+    \vspace{-0.2cm}
+    \begin{itemize}
+        \item[\textcolor{Red}{\bullet}] Leverages linearity (strong!);
+        \item[\textcolor{ForestGreen}{\bullet}] Easy to compute and interpret;
+    \end{itemize}
+    \column{0.08\textwidth}
+    \centering
+    {\color{black}\rule{0.8pt}{0.3\textheight}}
+    \column{0.46\textwidth}
+    \vspace{-0.1cm}
+    \begin{center}
+        \textbf{Fully Non-Parametric Methods}
+    \end{center}
+    \vspace{-0.2cm}
+    \begin{itemize}
+        \item[\textcolor{ForestGreen}{\bullet}] Extreme flexibility;
+        \item[\textcolor{Red}{\bullet}] Super data hungry!
+    \end{itemize}
+\end{columns}
+\vspace{0.5cm}
+\fbox{\parbox{0.95\textwidth}{\centering
+        \textcolor{FGVBlue}{Machine Learning methods are a \textit{compromise}: they allow for richer parametrizations while still being computationally feasible in high dimensions.}
+        }}
 \end{frame}
 
 \section{Causality in High Dimensions}
