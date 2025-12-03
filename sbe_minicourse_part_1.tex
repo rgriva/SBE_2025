@@ -61,8 +61,8 @@
 \setbeamercolor{background canvas}{bg=white}
 
 % ----- Hyperlinks and Bibliography -----
-%\usepackage[backend=biber,style=authoryear]{biblatex}
-%\addbibresource{references.bib}
+\usepackage[backend=biber,style=authoryear]{biblatex}
+\addbibresource{references.bib}
 \usepackage{hyperref}
 \hypersetup{
   colorlinks=true,
@@ -70,18 +70,30 @@
   urlcolor=FGVBlue,
   citecolor=FGVBlue
 } % close \hypersetup
+\DeclareFieldFormat{labelyear}{#1}
+\DeclareFieldFormat{shorthand}{#1}
+\DeclareFieldFormat{extraalpha}{#1}
+\DeclareNameFormat{default}{\namepartfamily}
+\AtEveryCitekey{\color{FGVBlue}}
+\let\cite\textcite
+\renewcommand*{\bibfont}{\tiny}
 
 % Make section titles slateblue
 \makeatletter
+% Preserve starred sections and optional arguments while coloring section titles.
 \let\oldsection\section
-\renewcommand{\section}[2][]{%
+\renewcommand{\section}{\@ifstar\star@section\@section}
+\newcommand{\@section}[2][]{%
     \if\relax\detokenize{#1}\relax
         \oldsection{\textcolor{slateblue}{#2}}%
     \else
         \oldsection[#1]{\textcolor{slateblue}{#2}}%
     \fi
 }
+\newcommand{\star@section}[1]{\oldsection*{\textcolor{slateblue}{#1}}}
 \makeatother
+
+
 %---------------- Document Start ----------------%
 \begin{document}
 
@@ -98,7 +110,6 @@
         \item I have just joined \textcolor{FGVBlue}{FGV EPGE} as an Assistant Professor;
         \item I got my PhD in Finance at \textcolor{KelloggPurple}{Northwestern University};
         \item Asset Pricing + Macro-Finance + Econometrics;
-        \item Some of my papers use ML methods in different contexts;
         \end{itemize}
         \pause
         \vspace{1cm}
@@ -113,6 +124,7 @@
     \begin{itemize}\itemsep0.6em
             \item Last 20-30 years: explosion of computation power and popularization of ML techniques;
             \item Last 15 years: we economists imported several techniques from CS and Stats;
+            \pause
             \item Many challenges in this translation:
             \vspace{-0.5cm}
                 \begin{columns}[t]
@@ -151,7 +163,7 @@
     \begin{itemize}
         \item My own economist-crafted definition of ML methods and how to think about them;
         \item Three very cool agendas where ML can help economists
-        \item Causality in high dimensions, seriously heterogeneous treatment effects, and solving large-scale GE models;
+        \item Causality in HD, seriously heterogeneous treatment effects, and solving large models;
     \end{itemize}
 \pause
 \vspace{0.5cm}
@@ -222,12 +234,12 @@
 
 \section{A General Framework}
 \begin{frame}{What is \textit{Machine Learning}?}
-    \begin{itemize}\itemsep1em
-        \item Different fields will have different definitions: CS, Stats, Operations Research, ...
+    \begin{itemize}\itemsep0.6em
+        \item Different fields = different definitions: CS, Stats, Operations Research, ...
         \item Many types: Supervised, Unsupervised, Reinforcement Learning, Deep Learning, ...
         \item More buzzwords = better consulting gigs! \emoji{money-mouth-face}
         \pause
-        \item For today and tomorrow, everything will be about \textbf{Supervised Learning};
+        \item Today and tomorrow: \textbf{Supervised Learning};
         \pause
         \item I will be brave enough and provide the one I think is really useful for Economists:
     \end{itemize}
@@ -253,6 +265,7 @@
 \pause
 \vspace{0.5cm}
 \textbf{Question:} given a function space $\mathcal{F}$, how to find $\hat{f} \in \mathcal{F}$ that approximates $f$ well?
+\pause
 \begin{itemize}
     \item Collect data $\{(y_1, \boldsymbol{x}_1), \ldots, (y_n, \boldsymbol{x}_n)\}$;
     \item Define some notion of "approximates well" $\implies$ (a loss function);
@@ -314,10 +327,61 @@ Consider an outcome $y_i$, and a set of covariates $\boldsymbol{x}_i$ for $i=1,\
 \end{columns}
 \vspace{0.5cm}
 \fbox{\parbox{0.95\textwidth}{\centering
-        \textcolor{FGVBlue}{Machine Learning methods are a \textit{compromise}: they allow for richer parametrizations while still being computationally feasible in high dimensions.}
+        \textcolor{FGVBlue}{Machine Learning = a \textit{compromise}: richer parametrizations while still computationally feasible in high dimensions.}
         }}
 \end{frame}
 
+\begin{frame}[standout]
+    Questions?
+\end{frame}
+
 \section{Causality in High Dimensions}
+
+\begin{frame}{Preliminaries}
+\begin{itemize}
+    \item No estimator will lead to causality by itself -- only careful design will;
+    \item ML methods were \textit{not} created to tackle causality problems;
+    \item See {\small \cite{varian_big_2014}, \cite{mullainathan_machine_2017}, \cite{athey_machine_2019}, and \cite{masini_machine_2023}};
+    \pause
+    \item \cite{kleinberg_prediction_2015}: many policy-relevant questions are prediction problems!
+    \pause
+    \item Belloni \emoji{flag-brazil}, Chernozhukov, Hansen and co-authors took it even further:
+    \begin{itemize}
+        \item Computing the propensity score \textit{is} forecasting!
+        \item The first-stage regression in an IV context \textit{is} forecasting!
+    \end{itemize}
+
+\end{itemize}
+    
+\end{frame}
+
+% Lasso 1
+\begin{frame}
+    
+\end{frame}
+
+% Lasso 2
+\begin{frame}
+    
+\end{frame}
+
+\begin{frame}{Generalizations}
+    
+\end{frame}
+
+
+% --- Appendix ---
+\appendix
+
+\begin{frame}[standout]
+  \begin{center}
+    \Huge
+    Appendix and References
+  \end{center}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+    \printbibliography[heading=none]
+\end{frame}
 
 \end{document}
