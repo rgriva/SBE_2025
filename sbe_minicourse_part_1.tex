@@ -338,8 +338,9 @@ Consider an outcome $y_i$, and a set of covariates $\boldsymbol{x}_i$ for $i=1,\
 \section{Causality in High Dimensions}
 
 \begin{frame}{Preliminaries}
-\begin{itemize}
+\begin{itemize}\itemsep0.5em
     \item No estimator will lead to causality by itself -- only careful design will;
+    \pause
     \item ML methods were \textit{not} created to tackle causality problems;
     \item See {\small \cite{varian_big_2014}, \cite{mullainathan_machine_2017}, \cite{athey_machine_2019}, and \cite{masini_machine_2023}};
     \pause
@@ -350,19 +351,90 @@ Consider an outcome $y_i$, and a set of covariates $\boldsymbol{x}_i$ for $i=1,\
         \item Computing the propensity score \textit{is} forecasting!
         \item The first-stage regression in an IV context \textit{is} forecasting!
     \end{itemize}
-
 \end{itemize}
     
 \end{frame}
 
-% Lasso 1
-\begin{frame}
-    
+% The General Problem
+\begin{frame}{Treatment Effects in High Dimensions}
+Suppose you're interested in the treatment effect $\theta_0 \in \mathbb{R}$:
+\begin{equation*}
+    y_i = d_i \theta_0 + \boldsymbol{x}_i'\boldsymbol{\beta} + \varepsilon_i
+\end{equation*}
+\begin{itemize}
+    \item $y_i \in \mathbb{R}$ is an outcome;
+    \item $d_i \in \mathbb{R}$ is a treatment;
+    \item $\boldsymbol{x}_i \in \R^p$ is a vector of available covariates;
+    \item $\varepsilon_i$ is some unobserved noise with $\E[\varepsilon_i \mid d_i, \boldsymbol{x}_i] = 0$;
+    \pause
+    \item You have an i.i.d. sample $\{y_i, d_i, \boldsymbol{x}_i\}_{i=1}^n$ and we \underline{allow} for $p \gg n$;
+    \pause
+    \item \textbf{Goal}: estimate $\theta_0$ and get a confidence interval;
+\end{itemize}
+\pause
+\vspace{0.5cm}
+\textbf{Question}: what will happen if you try OLS here?
 \end{frame}
 
 % Lasso 2
-\begin{frame}
-    
+\begin{frame}{Treatment Effects in High Dimensions}
+\begin{itemize}
+    \item Let's say you believe only a few $\beta_j$'s are $\neq 0$ $\implies$ \textit{``sparsity''} in $\boldsymbol{\beta}$;
+    \item But you do not know which ones!
+    \pause
+    \item What about using your economic intuition to select a subset of controls?
+    \pause
+    \item Applying Econ theory is always a good idea, but:
+    \begin{itemize}
+        \item You might not get a meaningful reduction with theory alone;
+        \item Your referee might not agree with your choices;
+        \item You might get lost in a sea of robustness checks...
+    \end{itemize}
+    \pause
+    \item Good news: ML researchers devoted a lot of attention to \textit{sparse regressions}!
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Welcome to SBE, Mr. LASSO}
+The Least Absolute Shrinkage and Selection Operator (LASSO) estimator solves:
+\begin{equation*}
+    \hat{\boldsymbol{\delta}} \equiv \arg \min_{\boldsymbol{\delta} \in \R^p} \left\{ \frac{1}{n} \sum_{i=1}^n (y_i - \boldsymbol{w}_i'\boldsymbol{\delta})^2 + \lambda \sum_{j=1}^p |\delta_j| \right\}
+\end{equation*}
+\begin{itemize}
+    \item $\lambda \geq 0$ is a tuning parameter that controls the amount of penalization (``\textit{regularization}'');
+    \item $\boldsymbol{w}_i$ is a general vector of regressors of size $p$;
+    \pause
+    \item The $\ell_1$ penalty $\sum_{j=1}^p |\delta_j|$ induces sparsity in $\hat{\boldsymbol{\delta}}$;
+    \pause
+    \item If $\lambda = 0$, we get OLS; if $\lambda \to \infty$, we get $\hat{\boldsymbol{\delta}} = \boldsymbol{0}$;
+    \pause
+    \item For intermediate values of $\lambda$, some $\hat{\delta}_j$'s will be exactly zero!
+    \pause
+    \item $\hat{\boldsymbol{\delta}}$ is gives up unbiasedness for much lower variance;
+    \item This problem is still feasible if $p \gg n$ and it is convex $\implies$ fast computation;
+\end{itemize}
+\end{frame}
+
+\begin{frame}{The Geometry of LASSO}
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.55\textwidth}
+        For $c > 0$, consider the following:
+        \begin{gather*}
+            \tilde{\boldsymbol{\delta}} \equiv \arg \min_{\boldsymbol{\delta} \in \R^p} \left\{ \frac{1}{n} \sum_{i=1}^n (y_i - \boldsymbol{w}_i'\boldsymbol{\delta})^2 \right\} \\
+            \text{ subject to } \sum_{j=1}^p |\delta_j| \leq c
+        \end{gather*}
+        \begin{itemize}
+            \item Think about the Lagrangian of this problem!
+            \item For every $\lambda$, there is a $c$ such that $\hat{\boldsymbol{\delta}} = \tilde{\boldsymbol{\delta}}$;
+        \end{itemize}
+    \end{column}
+
+    \begin{column}{0.45\textwidth}
+        \begin{center}
+            \includegraphics[width=0.95\textwidth]{code/lasso_geometry_delta.png}
+        \end{center}
+    \end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Generalizations}
