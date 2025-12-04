@@ -16,6 +16,8 @@ diamond = np.array([
 ax.fill(diamond[:, 0], diamond[:, 1],
         color=slateblue, alpha=0.95, zorder=1)
 
+ax.scatter(0, t, color='C1', s=15, zorder=3)
+
 # ---- Quadratic loss contours (OLS objective) ----
 center = np.array([1.4, 2.35])  # location of unconstrained estimator \hat{δ}
 Sigma = np.array([[3.0, 1.6],
@@ -34,9 +36,8 @@ ax.contour(D1, D2, quad, levels=levels,
            colors='red', linewidths=1)
 
 # ---- Unconstrained estimator point ----
-ax.scatter(center[0], center[1], color='black', s=25, zorder=3)
-ax.text(center[0] + 0.1, center[1] + 0.05,
-        r'$\hat{\delta}$', fontsize=14)
+ax.scatter(center[0], center[1], color='black', s=15, zorder=3)
+#ax.text(center[0] + 0.1, center[1] + 0.05, r'$\hat{\delta}$', fontsize=14)
 
 # ---- Axes and labels ----
 ax.axhline(0, color='black', linewidth=1)
