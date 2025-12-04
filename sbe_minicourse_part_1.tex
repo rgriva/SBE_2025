@@ -485,21 +485,15 @@ They proposed the \textbf{Double LASSO} procedure:
 \end{enumerate}
 \end{frame}
 
-\begin{frame}{asdf}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.95\textwidth]{Single_vs_Double_Selection.png}
-\end{figure}
-\end{frame}
-
 \begin{frame}{A Really Cool Result}
 \cite{belloni_high-dimensional_2014} provide conditions under which:
 \begin{equation*}
-    \sqrt{n}(\hat{\theta}_0 - \theta_0) \to_d \mathcal{N}(0, \sigma^2)
+    \sqrt{n}(\hat{\theta}_0 - \theta_0) \xrightarrow{d} \mathcal{N}(0, \sigma^2)
 \end{equation*}
 where $\sigma^2$ is complicated by consistently estimated.
 \pause
 \vspace{0.5cm}
+
 \textbf{The impressive stuff}:
 \begin{itemize}
     \item This convergence is uniform over a large class of DGPs;
@@ -511,9 +505,18 @@ where $\sigma^2$ is complicated by consistently estimated.
 \textbf{Key assumption}: sparse representation;
 \end{frame}
 
-\begin{frame}{Some limitations}
-    
+\begin{frame}{Some Monte-Carlo Reassurance}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\textwidth]{Single_vs_Double_Selection.png}
+\end{figure}
 \end{frame}
+
+\begin{frame}[standout]
+    Questions?
+\end{frame}
+
+\section{Limitations and Generalizations}
 
 \begin{frame}{Limitations}
 \begin{itemize}
@@ -536,18 +539,50 @@ where $\sigma^2$ is complicated by consistently estimated.
     \item $g_0(\cdot)$ and $m_0(\cdot)$ are unknown (possibly non-linear) functions;
     \item You can use several different ML method to estimate $g_0(\cdot)$ and $m_0(\cdot)$;
     \item Sparsity is not necessary anymore;
-    \item The secrete sauce: \underline{cross-fitting} $\implies$ efficiency vs strict assumptions;
+    \pause
+    \item Secrete sauce I: \underline{Neyman Orthogonal Scores} $\psi$
+    \[
+    \E\left[\psi(\text{data}, \underbrace{\text{param of interest}}_{\equiv \theta_0}, \underbrace{\text{nuisance params}}_{\equiv \eta_0})\right] = 0, \qquad \frac{\partial}{\partial \eta} \E\left[\psi(\text{data}, \theta_0, \eta)\right] \Big|_{\eta = \eta_0} = 0
+    \]
+    \pause
+    \item Secrete sauce II: \underline{cross-fitting} $\implies$ efficiency vs strict assumptions;
+    \pause
     \item Independence across $i$ is \underline{essential};
 \end{itemize}
+\end{frame}
+
+\begin{frame}{A Concrete Example (A Partially Linear Model)}
+    \begin{gather*}
+    y_i = d_i\theta_0 + g_0(\boldsymbol{x}_i) + \varepsilon_i, \quad \E[\varepsilon_i \mid d_i, \boldsymbol{x}_i] = 0 \\
+    d_i = m_0(\boldsymbol{x}_i) + u_i, \quad \E[u_i \mid \boldsymbol{x}_i] = 0
+\end{gather*}
+\pause
+Steps:
+\begin{itemize}
+    \item Divide the data into two folds;
+    \item On fold 1, estimate $\hat{g}_0(\boldsymbol{x}_i)$ and $\hat{m}_0(\boldsymbol{x}_i)$ using ML methods;
+    \item On fold 2, compute residuals:
+    \begin{gather*}
+        \hat{\varepsilon}_i = y_i - \hat{g}_0(\boldsymbol{x}_i) \\
+        \hat{u}_i = d_i - \hat{m}_0(\boldsymbol{x}_i)
+    \end{gather*}
+    \item Regress $\hat{\varepsilon}_i$ on $\hat{u}_i$ to get $\hat{\theta}_0$;
+    \pause
+    \item Repeat switching folds and average $\hat{\theta}_0$'s;
+    \pause
+    \item In practice you can use $K$ folds!
+    \item See \cite{chernozhukov_doubledebiasedneyman_2017} for a practical guide!
+\end{itemize}
+
     
 \end{frame}
 
 \begin{frame}{Where do we go now?}
 Some open problems:
 \begin{itemize}
-    \item Weak identification, in special in the IV context;
-    \item Time series $\implies$ it's impossible to do cross-fitting;
-    \item Panel data $\implies$ usual estimators leverage linearity;
+    \item Weak identification, in special in the IV context (see \cite{Buhlmann2025});
+    \item Time series $\implies$ it's impossible to do cross-fitting (see \cite{NEURIPS});
+    \item Panel data $\implies$ usual estimators leverage linearity (see \cite{Chernozhukov2021} and \cite{Clarke2025});
 \end{itemize}
 \pause
 \vspace{1cm}
