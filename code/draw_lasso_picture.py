@@ -1,5 +1,7 @@
-import numpy as np
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 # High-resolution figure
 fig, ax = plt.subplots(figsize=(3, 6), dpi=300)
@@ -61,6 +63,11 @@ ax.text(-0.15, ax.get_ylim()[1], r'$\delta_2$',
 
 fig.tight_layout()
 
-# Save VERY high-res version for slides
-plt.savefig("lasso_geometry_delta.png", dpi=600, bbox_inches="tight")
-plt.show()
+project_root = Path(__file__).resolve().parent.parent
+pictures_dir = project_root / "pictures"
+pictures_dir.mkdir(exist_ok=True)
+
+# Save VERY high-res version for slides in the shared pictures folder
+output_path = pictures_dir / "lasso_geometry_delta.png"
+plt.savefig(output_path, dpi=600, bbox_inches="tight")
+plt.close(fig)
