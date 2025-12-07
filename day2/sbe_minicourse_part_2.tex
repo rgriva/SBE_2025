@@ -1,0 +1,205 @@
+\documentclass[aspectratio=169, xcolor=dvipsnames, 11pt]{beamer}
+\usetheme{moloch}
+\molochset{
+  progressbar = frametitle,
+  block = fill
+}
+% Use beamer's page number in head/foot template
+\setbeamertemplate{footline}[frame number]
+\setbeamersize{text margin left=0.5cm,text margin right=0.5cm}
+
+% from https://tex.stackexchange.com/a/441705/36296
+\makeatletter
+\addtobeamertemplate{date}{\centering}{}
+\addtobeamertemplate{institute}{\centering}{}
+\patchcmd{\beamer@@tmpl@title}{\raggedright}{\centering}{}{}
+\patchcmd{\beamer@@tmpl@author}{\raggedright}{\centering}{}{}
+\setlength{\moloch@titleseparator@linewidth}{2pt}
+\setlength{\moloch@progressinheadfoot@linewidth}{1.5pt}
+\setbeamercolor{progress bar}{fg=FGVBlue, bg=white}
+\makeatother
+
+% ----- Packages -----
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{xcolor} % For colored bullets
+\usepackage{appendixnumberbeamer}
+\usepackage{emoji}
+\setemojifont{Apple Color Emoji}
+% TikZ for decorative braces in slides
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing,positioning,calc}
+
+% ----- Metadata -----
+\title[]{ML in Economics and Finance: Where do We Go Now? - Part I}
+
+\author[]{
+  \textbf{Raul Riva}
+}
+\institute[]{
+  \textcolor{FGVBlue}{FGV EPGE}
+  \vspace{0.75cm}
+}
+\date[]{December, 2025 \\ \vspace{1cm} INSPER - São Paulo}
+
+% ----- Custom commands -----
+\newcommand{\R}{{\mathbb{R}}}
+\renewcommand{\Pr}{{\mathbb{P}}}
+\newcommand{\E}{{\mathbb{E}}}
+\newcommand{\var}{{\mathrm{var}}}
+\newtheorem{prop}[theorem]{Proposition}
+
+% ----- Defining colors -----
+\usepackage[dvipsnames]{xcolor}
+\definecolor{slateblue}{RGB}{45, 62, 80}
+\definecolor{KelloggPurple}{HTML}{4E2A84}
+\setbeamercolor{palette primary}{bg=slateblue, fg=white}
+\definecolor{FGVBlue}{RGB}{0, 114, 188}
+\setbeamercolor{title separator}{bg=FGVBlue, fg=FGVBlue}
+\setbeamercolor{background canvas}{bg=white}
+
+% ----- Hyperlinks and Bibliography -----
+\usepackage[backend=biber,style=authoryear,maxcitenames=2,mincitenames=1,maxbibnames=99,uniquename=false,uniquelist=false]{biblatex}
+\ExecuteBibliographyOptions{maxcitenames=2,mincitenames=1,uniquelist=false}
+\addbibresource{../references.bib}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=FGVBlue,
+  urlcolor=FGVBlue,
+  citecolor=FGVBlue
+} % close \hypersetup
+\DeclareFieldFormat{labelyear}{#1}
+\DeclareFieldFormat{shorthand}{#1}
+\DeclareFieldFormat{extraalpha}{#1}
+\AtEveryCitekey{\color{FGVBlue}}
+\DeclareNameFormat{labelname}{%
+    \nameparts{#1}%
+    \usebibmacro{name:family}{\namepartfamily}{\namepartgiven}{\namepartprefix}{\namepartsuffix}%
+    \usebibmacro{name:andothers}}
+\let\cite\textcite
+\renewcommand*{\bibfont}{\tiny}
+
+% Make section titles slateblue
+\makeatletter
+% Preserve starred sections and optional arguments while coloring section titles.
+\let\oldsection\section
+\renewcommand{\section}{\@ifstar\star@section\@section}
+\newcommand{\@section}[2][]{%
+    \if\relax\detokenize{#1}\relax
+        \oldsection{\textcolor{slateblue}{#2}}%
+    \else
+        \oldsection[#1]{\textcolor{slateblue}{#2}}%
+    \fi
+}
+\newcommand{\star@section}[1]{\oldsection*{\textcolor{slateblue}{#1}}}
+\makeatother
+
+
+%---------------- Document Start ----------------%
+\begin{document}
+
+\begin{frame}{Flight Plan {\normalfont\emoji{airplane}}}
+    \begin{enumerate}
+        \item What is ML, anyway?\tikz[remember picture,baseline] \node (it1) {};
+        \item Causality in High Dimensions\tikz[remember picture,baseline] \node (it2) {};
+        \item (Seriously) Heterogeneous Partial Effects\tikz[remember picture,baseline] \node (it3) {};
+        \item Solving Large-Scale General Equilibrium Models\tikz[remember picture,baseline] \node (it4) {};
+    \end{enumerate}
+
+    % Decorative braces indicating Today / Tomorrow on the right
+    \begin{tikzpicture}[remember picture,overlay]
+        \coordinate (todayAnchor) at ($(it2.east)+(0.45cm,-0.2cm)$);
+        \coordinate (tomorrowAnchor) at ($(it4.east)+(0.45cm,-0.2cm)$);
+
+        \draw[decorate,decoration={brace,amplitude=6pt,mirror},line width=1pt]
+            (todayAnchor |- it2.south) -- ($(todayAnchor |- it1.north)+(0,0.3cm)$)
+            node[midway,right=12pt]{\textbf{Yesterday}};
+
+        \draw[decorate,decoration={brace,amplitude=6pt,mirror},line width=1pt]
+            (tomorrowAnchor |- it4.south) -- ($(tomorrowAnchor |- it3.north)+(0,0.3cm)$)
+            node[midway,right=12pt]{\textbf{Today}};
+    \end{tikzpicture}
+\end{frame}
+
+\section{Heterogeneous Partial Effects}
+
+\begin{frame}{Motivation}
+Let $Y$ be an outcome and $X, Z$ be features (covariates). We frequently want to approximate
+\begin{equation*}
+    h(x, z) \equiv \E[Y | X=x, Z=z]
+\end{equation*}
+and the \textbf{partial effects}
+\begin{equation*}
+    \frac{\partial}{\partial x} h(x, z) = \frac{\partial}{\partial x} \E[Y | X=x, Z=z].
+\end{equation*}
+\begin{itemize}
+    \pause
+    \item This is a prediction problem after all!
+    \pause
+    \item Approach 1: impose a parametric model for $h$, e.g. linear regression. Pros and cons?
+    \item Approach 2: use fully nonparametric methods. Pros and cons?
+    \pause
+    \item The third way is the charm: a bit of structure, a bit of ML!
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Example I - Heterogenous Treatment Effects}
+\begin{itemize}
+    \item Outcomes $Y_i$ depend on a treatment $X_i \in \R$ and covariates $Z_i \in \R^p$;
+    \item The dose $X_i$ depends on observables $Z_i$;
+    \item Potential outcomes $Y_i(x)$ for each dose $x \in \R$;
+    \pause
+    \item The conditional average effect of increasing the dose is $\tau(x, z) \equiv \frac{\partial}{\partial x} \E[Y(x) | Z=z]$;
+    \item If $\E[Y(x) | X=x, Z=z] = \E[Y(x) | Z=z]$ (common assumption in the literature), then 
+    \[
+    \tau(x, z) = \frac{\partial}{\partial x} \E[Y | X=x, Z=z] = \frac{\partial h(x,z)}{\partial x}
+    \]
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Example II - Grouped Heterogeneity}
+Consider the following model:
+\begin{equation*}
+    Y_i = \alpha(Z_i) +  X_i' \beta + \varepsilon_i, \quad \E[\varepsilon_i | X_i, Z_i] = 0,  
+\end{equation*}
+\begin{itemize}
+    \item $X_i$ affects $Y_i$ homogeneously;
+    \item Intercept $\alpha(Z_i)$ varies with $Z_i$, maybe in a highly nonlinear way;
+    \item Since $Z_i$ and $X_i$ can be correlated, this can affect inference about $\beta$;
+    \item \cite{Bonhomme2015} studied how democracy affects national income using this model;
+    \item In their case: $\alpha(Z_i)$ is constant across groups but $Z_i$ defines membership;
+    \item In our notation: $h(z, x) = \alpha(z) + x' \beta$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[standout]
+    Questions?
+\end{frame}
+
+\begin{frame}[standout]
+    \begin{center}
+       Thank you!\\
+        See you tomorrow, stay tuned!
+    \end{center}
+\end{frame}
+
+% --- Appendix ---
+\appendix
+
+\begin{frame}[standout]
+  \begin{center}
+    \Huge
+    Appendix and References
+  \end{center}
+\end{frame}
+
+\begin{frame}{References}
+    \footnotesize
+    \printbibliography[heading=none]
+\end{frame}
+
+\end{document}
