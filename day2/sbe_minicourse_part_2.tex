@@ -33,7 +33,7 @@
 \usetikzlibrary{decorations.pathreplacing,positioning,calc}
 
 % ----- Metadata -----
-\title[]{ML in Economics and Finance: Where do We Go Now? - Part I}
+\title[]{ML in Economics and Finance: Where do We Go Now? - Part II}
 
 \author[]{
   \textbf{Raul Riva}
@@ -100,6 +100,9 @@
 
 %---------------- Document Start ----------------%
 \begin{document}
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
 
 \begin{frame}{Flight Plan {\normalfont\emoji{airplane}}}
     \begin{enumerate}
@@ -175,10 +178,201 @@ Consider the following model:
 \end{itemize}
 \end{frame}
 
+\begin{frame}{How can we balance flexibility and interpretability?}
+\cite{masini_balancing_2025} \emoji{flag-brazil} proposed a middle ground:
+\begin{equation*}
+    h(x, z) = x^\top \beta(z), \qquad \frac{\partial h(x,z)}{\partial x} = \beta(z)
+\end{equation*}
+\begin{itemize}
+    \item The partial effect of $X$ on $Y$ varies with $Z$ through $\beta(z)$;
+    \item $\beta(.)$ is a Lipschitz function that can be estimated with ML methods;
+    \item No need to numerically approximate $\frac{\partial}{\partial x} h(x, z)$;
+    \pause
+    \item Explicit conditions for consistency \textit{and} asymptotic normality of $\hat{\beta}(z)$;
+    \pause
+    \item Secrete sauce: a variant of the \textbf{Random Forest} algorithm!
+\end{itemize}
+\pause
+\vspace{0.5cm}
+But what is a Random Forest, anyway? \emoji{thinking-face}
+\end{frame}
 
 \begin{frame}[standout]
     Questions?
 \end{frame}
+
+\section{Quick Intro to Random Forests}
+
+\begin{frame}{Random Trees}
+Recall the general ML framework:
+\begin{equation*}
+    Y = f(X) + \varepsilon
+\end{equation*}
+A \textbf{Random Tree} is a particular way of parametrizing $f$!
+\pause
+\vspace{0.5cm}
+\begin{itemize}\itemsep0.4em
+    \item If $X \in \R^p$, consider a finite partition $\{S_1, S_2, \ldots, S_m\}$ of $\R^p$;
+    \item Each $S_i$ is a hyperrectangle defined by recursive binary splits on the covariates;
+    \item On each $S_i$, $f$ is constant: $f(x) = \mu_i$ for all $x \in S_i$;
+    \item After a tree has been estimated (``grown''), $\hat{f}(x_i) = \mu_i$ if $x_i \in S_i$;
+\end{itemize}
+\pause
+\vspace{0.4cm}
+The really complicated part: there are \textit{so many} partitions... how to pick one?
+
+\vspace{0.3cm}
+\begin{center}
+    \fbox{\parbox{0.9\textwidth}{
+    \cite{Hyafil1976}: this is harder than you think! The problem is NP-complete!
+}}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Example: Predicting Baseball Player Salaries}
+    \begin{columns}[T,onlytextwidth]
+        \column{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{../pictures/Baseball.png}
+
+        \column{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{../pictures/Baseball_region.png}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{How to pick a split point? Use some greed!}
+Let's say you want to split on feature $X_j$ at point $\delta$:
+\begin{gather*}
+    S_1 \equiv \{x \in \R^p: x_j \leq \delta\}, \quad S_2 \equiv \{x \in \R^p: x_j > \delta\}\\
+    \mu_1 \equiv \sum_{i: x_i \in S_1} \frac{Y_i}{n_1}, \quad \mu_2 \equiv \sum_{i: x_i \in S_2} \frac{Y_i}{n_2}
+\end{gather*}
+\pause
+\begin{itemize}\itemsep0.4em
+    \item Define $SSR(\delta) \equiv \sum_{i: x_i \in S_1} (Y_i - \mu_1)^2 + \sum_{i: x_i \in S_2} (Y_i - \mu_2)^2$
+    \item Choose $\delta$ to minimize $SSR(\delta) \implies$ this is usually very fast to compute!
+    \pause
+    \item Repeat this for all features $X_j$ and pick the best one;
+    \item Important: you need some stopping rule! There is a huge literature on this... 
+    \item Example: minimum number of observations per leaf;
+\end{itemize}
+
+\pause
+\vspace{0.5cm}
+This is the so-called the \textbf{CART} algorithm due to \cite{Breiman1984}.
+\end{frame}
+
+\begin{frame}{How to get a Random Forest?}
+
+A Random Forest is an \textbf{ensemble} of Random Trees:
+\[
+\hat{f}^{(1)}(x), \hat{f}^{(2)}(x), \ldots, \hat{f}^{(B)}(x)
+\]
+
+\vspace{0.3cm}
+\pause
+Each tree is grown on a \textbf{perturbed version} of the data:
+\begin{itemize}\itemsep0.2em
+    \item Bootstrap sample of the observations;
+    \item Random subset of features considered at each split;
+\end{itemize}
+
+\pause
+\vspace{0.3cm}
+The forest prediction is the \textbf{average}:
+\[
+\hat{f}_{RF}(x) = \frac{1}{B} \sum_{b=1}^B \hat{f}^{(b)}(x)
+\]
+
+\pause
+\vspace{0.3cm}
+Key insight:
+\begin{itemize}\itemsep0.4em
+    \item Each tree is noisy and biased, but averaging them reduces variance dramatically;
+    \item Randomness \emph{decorrelates} the trees, making averaging powerful;
+\end{itemize}
+\end{frame}
+
+\begin{frame}[standout]
+    Questions?
+\end{frame}
+
+\section{Back to Partial Effects}
+
+\begin{frame}{The Main Insight}
+We have a random sample $\{(Y_i, X_i, Z_i)\}_{i=1}^n$ from
+\begin{equation*}
+    Y_i = X_i^\top \beta(Z_i) + \varepsilon_i, \quad \E[\varepsilon_i | X_i, Z_i] = 0
+\end{equation*}
+\vspace{-0.3cm}
+\pause
+\begin{itemize}
+    \item \cite{masini_balancing_2025} proposed to estimate $\beta(z)$ using a modified Random Forest;
+    \item Key modification: at each split, try to minimize the \textbf{local least squares} criterion;
+\end{itemize}
+\pause
+\vspace{0.4cm}
+Suppose you want to split at $Z_j \leq \delta$ as before. Then:
+\begin{gather*}
+    S_1 \equiv \{z \in \mathbb{R}^p: z_{j} \leq \delta\}, \quad S_2 \equiv \{z \in \mathbb{R}^p: z_{j} > \delta\}\\
+    (\hat{\beta}_1) \equiv \arg\min_{\beta} \sum_{i: Z_{i,j} \in S_1} (Y_i - X_i^\top \beta)^2, \quad (\hat{\beta}_2) \equiv \arg\min_{\beta} \sum_{i: Z_{i,j} \in S_2} (Y_i - X_i^\top \beta)^2\\
+    SSR(\delta) \equiv \sum_{i: Z_{i,j} \in S_1} (Y_i - X_i^\top \hat{\beta}_1)^2 + \sum_{i: Z_{i,j} \in S_2} (Y_i - X_i^\top \hat{\beta}_2)^2
+\end{gather*}
+\pause
+Pick $\delta$ to minimize $SSR(\delta)$!
+\end{frame}
+
+\begin{frame}{The Algorithm}
+Pick a number of trees $B$ and a minimum leaf size $k$. For $b=1, \ldots, B$:
+\vspace{0.3cm}
+\begin{enumerate}
+    \item Draw a bootstrap sample of size $s \leq n$ from the data;
+    \item Divide the data into two halves $\mathcal{A}$ and $\mathcal{B}$;
+    \item Using $\mathcal{B}$, keep splitting at random dimensions $j$ using the previous criterion;
+    \item Stop when all leaves have less than $2k -1$ and more than $k$ observations;
+    \item Using $\mathcal{A}$, estimate $\beta(z)$ using only observations in the leaf where $z$ falls;
+\end{enumerate}
+\vspace{0.5cm}
+The final estimate is
+\begin{equation*}
+    \hat{\beta}(z) = \frac{1}{B} \sum_{b=1}^B \hat{\beta}^{(b)}(z)
+\end{equation*}
+\pause
+\vspace{0.8cm}
+This algorithm uses \textbf{honest trees}! Similar intuition to cross-fitting.
+\end{frame}
+
+\begin{frame}{Cool Properties and Limitations}
+\textbf{Cool properties}:
+\begin{itemize}
+        \item Highly interpretable and relatively mild assumptions on $\beta(z)$;
+        \item Easy confidence intervals for $\beta(z)$ at any point $z$:
+        \begin{equation*}
+            \Omega^{-1/2}(z) \left( \hat{\beta}(z) - \beta(z) \right) \xrightarrow{d} \mathcal{N}(0, I_q)
+        \end{equation*}
+        for some complicated $\Omega(x)$ that can be estimated consistently;
+        \item There is also a Lagrange multiplier test for homogeneity of $\beta(z)$;
+    \end{itemize}
+\vspace{0.3cm}
+\pause
+\textbf{Limitations}:
+\begin{itemize}
+        \item The dimension of $X_i$ should be small relative to $n$;
+        \item The dimension of $Z_i$ cannot be \textit{that} large relative to $n$;
+        \item Pointwise inference only;
+        \item It cannot be readily applied to time series and panel data;
+        \item It can be computationally demanding in large datasets;
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[standout]
+    \begin{center}
+       Questions?
+    \end{center}
+\end{frame}
+
+\section{Solving Large-Scale General Equilibrium Models}
 
 \begin{frame}[standout]
     \begin{center}
