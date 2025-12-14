@@ -49,6 +49,9 @@
 \renewcommand{\Pr}{{\mathbb{P}}}
 \newcommand{\E}{{\mathbb{E}}}
 \newcommand{\var}{{\mathrm{var}}}
+\newcommand{\s}{{\boldsymbol{s}}}
+\newcommand{\cc}{{\boldsymbol{c}}}
+\newcommand{\uu}{{\boldsymbol{u}}}
 \newtheorem{prop}[theorem]{Proposition}
 
 % ----- Defining colors -----
@@ -372,7 +375,237 @@ This algorithm uses \textbf{honest trees}! Similar intuition to cross-fitting.
     \end{center}
 \end{frame}
 
-\section{Solving Large-Scale General Equilibrium Models}
+\begin{frame}[standout]
+    \begin{center}
+       Take a deep breath... we are changing topics!\\
+       \vspace{0.5cm}
+       \emoji{grimacing-face}
+    \end{center}
+\end{frame}
+
+\section{Solving Large Models Through Deep Learning}
+
+\begin{frame}{There is tension in the air...}
+    \begin{itemize}
+        \item Dynamic programming/stochastic control everywhere: Macro, Finance, IO, Labor, etc;
+        \item Pen and paper won't cut it: we need sophisticated numerical methods;
+        \item \underline{Tension}: \alert{the models we can solve} vs \textcolor{FGVBlue}{the ones we \textit{would like} to solve};
+        \item Main challenge: computational cost increases exponentially with state space dimension;
+        \item Traditional practice: simpler economics, simpler models;
+        \pause
+        \item In practice: forget solving models with more than $\approx$ 8-10 state variables;
+    \end{itemize}
+    \vspace{0.6cm}
+    \begin{center}
+    \fbox{\parbox{0.5\textwidth}{
+        \centering
+    \textbf{Deep Learning} to the rescue!
+}}
+\end{center}
+\end{frame}
+
+\begin{frame}{The Three Musketeers}
+Let $\s\in \R^n$ be a state vector, $\cc \in \R^m$ be a control vector, and $\uu \in \R^k$ be shocks:
+    \begin{gather*}
+        V(\s) = \max_{c} \left\{ u(\cc) + e^{-\rho} \E\left[ V\left(\s' \right) \mid \s,\cc \right] \right\}\\
+        \s' = f(\s,\cc,\uu), \quad \uu \sim F(\cdot)
+    \end{gather*}
+\pause
+    Following \cite{Powell2011}
+    \begin{itemize}
+        \item \textbf{The curse of representation}: a Cartesian grid for $\s$ grows exponentially with $n$;
+        \begin{itemize}
+            \item Ex: 100 grid points per dimension $\implies$ $10^{2n}$ total points;
+            \item Ex: $n=26$, 100 points per dimension $= O(10^{40})$ TB of RAM (AWS $\approx 10^9$ TB);
+        \end{itemize}
+        \item \textbf{The curse of expectation}: $$\E\left[ V\left(\s' \right) \mid \s,\cc \right] = \int_{u_1} \int_{u_2}\cdots\int_{u_k} V\left( f(\s,\cc(\s),\uu) \right) \phi(\uu)d\uu_1 d\uu_2\cdots d\uu_k $$
+        \item \textbf{The curse of optimization}: Given $V(.)$,  $10^{2n}$ optimizations to find $\cc(\s)$;
+    \end{itemize}
+    
+\end{frame}
+
+\begin{frame}{Can Ito Calculus Save Us?}
+\begin{gather*}
+    V(\s_t) = \sup_{\cc}\E_t\left\{\int\limits_{t}^{\infty}e^{-\rho(\nu - t)} u(\cc_\nu) d\nu \right\}\\
+    \text{subject to } d\s_t = f(\s_t, \cc_t)dt + g(\s_t, \cc_t)d\mathbf{B}_t
+\end{gather*}
+\pause
+The Stochastic Control gang is smart... give up $\E$, use Ito's lemma, and solve a PDE!
+
+\pause
+\vspace{0.4cm}
+Under some conditions, $V(\s)$ and $\cc(\s)$ are such that:
+\begin{gather*}
+    HJB(\s, \cc, V) \equiv -\rho V(\s) + u(\cc) + \nabla_{\s} V(\s)^\top f(\s, \cc) + \frac{1}{2} \text{tr}\left( g(\s, \cc)^\top\nabla^2_{\s\s} V(\s) g(\s, \cc)  \right)\\
+    \pause
+    HJB(\s, \cc(s), V) = 0, \quad \forall \s \in \R^n \, \text{at the optimum policy}\\
+    \cc(s) = \arg \max_{\cc} u(\cc) + \nabla_{\s} V(\s)^\top f(\s, \cc) + \frac{1}{2} \text{tr}\left( g(\s, \cc) g(\s, \cc)^\top \nabla^2_{\s\s} V(\s) \right)
+\end{gather*}
+\end{frame}
+
+\begin{frame}{Good News and Bad News}
+\begin{itemize}
+    \item \textbf{Good news}: no expectation operator! Solve the PDE and we are done;
+    \pause
+    \item \textbf{Bad news}: we still need to represent $V(\s)$ and $\cc(\s)$ somehow;
+    \pause
+    \item \textbf{Worse news}: we still need to optimize $\cc(\s)$ at each $\s$;
+    \pause
+    \item \textbf{Even worse news}: solving PDEs in high dimensions is notoriously difficult;
+    \pause
+    \item Typical approach from engineering: \textbf{Finite Differences} or \textbf{Finite Elements};
+    \item Let $n=1$ (scalar state) and an equally spaced grid $\{\s_1, \s_2, \ldots, \s_M\}$. Then:
+    \begin{equation*}
+        \frac{dV(s)}{ds} \Big|_{s=s_i} \approx \frac{V(s_{i+1}) - V(s_{i-1})}{2\Delta s}, \quad \frac{d^2V(s)}{ds^2} \Big|_{s=s_i} \approx \frac{V(s_{i+1}) - 2V(s_i) + V(s_{i-1})}{\Delta s^2}
+    \end{equation*}
+    \pause
+    \item Drawback: we need very fine grids to approximate derivatives well;
+\end{itemize}
+\end{frame}
+
+\begin{frame}{The Beauty of Spectral Methods}
+\textbf{Key idea}: Parametrize $V(\s)$ using a convenient \textit{basis of functions}!
+\pause
+\vspace{0.4cm}
+\begin{itemize}
+    \item Example for $n=1$:
+    \[
+        V(s) = \sum_{k=0}^{K} a_k T_k(s)
+    \]
+    \pause
+    \item Derivatives of $V(s)$ are analytically available
+    \quad \textit{(fast... like really fast!)};
+    \pause
+    \item Excellent global approximation properties
+    \quad (minimax interpolation error);
+    \pause
+    \item \textbf{However}: if $n>1$, the basis relies on \textbf{tensor products}:
+    \[
+        V(s_1,\ldots,s_n)
+        =
+        \sum_{k_1=0}^{K}\cdots\sum_{k_n=0}^{K}
+        a_{k_1,\ldots,k_n}
+        \prod_{j=1}^n T_{k_j}(s_j)
+    \]
+    \pause
+    \item Number of coefficients grows exponentially with $n$:
+    \[
+        (K+1)^n
+    \]
+\end{itemize}
+\end{frame}
+
+\begin{frame}{A Deep Contribution}
+\begin{itemize}\itemsep0.5em
+    \item Chebyshev polynomials are amazing but only in lower dimensions (say $n < 8$);
+    \pause
+    \item A good basis of functions for us should feature:
+    \begin{itemize}
+        \item \textbf{Richness}: be able to approximate a wide variety of functions;
+        \item \textbf{Performance}: Fast computation derivatives/gradients;
+        \item \textbf{Expressiveness}: Few parameters should suffice to approximate complex functions;
+    \end{itemize}
+\end{itemize}
+
+\vspace{0.8cm}
+
+\cite{Duarte2024}: let's embrace Neural Networks!
+\vspace{0.4cm}
+\pause
+
+\textbf{But why?}
+\begin{itemize}
+    \item Neural networks can approximate almost any function;
+    \item Computing gradients is super fast due to breakthroughs in \textit{Automatic Differentiation};
+    \item If we use \textit{deep} Neural Nets, we need few parameters!
+\end{itemize}
+\end{frame}
+
+\begin{frame}[standout]
+    \begin{center}
+       Questions?
+    \end{center}
+\end{frame}
+
+\section{But what is a Neural Network?}
+\begin{frame}{A Smart Way of Composing Functions}
+    \begin{columns}[T,onlytextwidth]
+        \column{0.54\textwidth}
+        \begin{itemize}\itemsep0.8em
+            \item Each node is equipped with weights $\boldsymbol{w}$, a bias $b$, and an activation function $\sigma(.)$;
+            \item Hidden nodes compute $\sigma(\boldsymbol{w}^\top \boldsymbol{x} + b)$;
+            \item Examples of $\sigma(.)$: $\underbrace{\max\{0, x\}}_{\text{ReLU}}$, $\tanh(x)$;
+            \item Output of hidden layer: $\boldsymbol{h}(\boldsymbol{x}, \boldsymbol{\theta}) = \sigma\left(W \boldsymbol{x} + \boldsymbol{b}\right)$;
+            \item Final output: $\hat{y} = \boldsymbol{w}_{out}^\top \boldsymbol{h}(\boldsymbol{x}, \boldsymbol{\theta}) + b_{out}$;
+            \item Abuse notation: $\boldsymbol{\theta} \equiv(\boldsymbol{W}, \boldsymbol{b}, \boldsymbol{w}_{out},b_{out})$
+            \item \textit{Shallow neural network} = 1 hidden layer;
+        \end{itemize}
+
+        \column{0.45\textwidth}
+        \centering
+        \begin{figure}
+            \centering
+            \includegraphics[width=0.95\textwidth]{../pictures/single_layer_NN.png}
+        \end{figure}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Does it have good properties?}
+    \cite{Cybenko1989} proved that this basis of functions is rich:
+    \begin{theorem}[Universal Approximation]
+        Any continuous function on a compact subset of $\mathbb{R}^n$ can be approximated to arbitrary precision by a shallow neural network with any non-polynomial activation function.
+    \end{theorem}
+    \pause
+    Some bad news: how many hidden nodes do we need?
+    \pause
+    \pause
+    \noindent\rule{\linewidth}{0.4pt}
+    Some \textbf{great} news at last:
+    \begin{itemize}
+        \item If we allow for \textit{more layers}, we can use fewer nodes in each layer;
+        \item More layers and fewer nodes $=$ fewer parameters than a single super wide layer;
+    \end{itemize}
+    \pause
+    \begin{theorem}[\cite{Lu_NIPS}]
+        For any Lebesgue integrable function $f \in L^1 (\mathbb{R}^n)$, there exists a ReLU deep neural network with width at most $n + 4$ in every hidden layer that approximates $f$ to arbitrary precision.
+    \end{theorem}
+\end{frame}
+
+\begin{frame}{What is a Deep Neural Network?}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.85\textwidth]{../pictures/multi_layer_NN.png}
+    \end{figure}
+    
+\end{frame}
+
+\begin{frame}{How do we find these parameters?}
+\textit{Training the network} = picking $\boldsymbol{\theta}$ to minimize some loss function:
+\begin{equation*}
+    \mathcal{L}(\boldsymbol{\theta}) = \frac{1}{n} \sum_{i=1}^n \left(y_i - f(\boldsymbol{x}_i, \boldsymbol{\theta})\right)^2
+\end{equation*}
+\pause
+
+One scheme to minimize $\mathcal{L}(\boldsymbol{\theta})$ is Gradient Descent:
+\begin{equation*}
+    \nabla_{\boldsymbol{\theta}} \mathcal{L}(\boldsymbol{\theta}) = -\frac{2}{n} \sum_{i=1}^n \left(y_i - f(\boldsymbol{x}_i, \boldsymbol{\theta})\right) \nabla_{\boldsymbol{\theta}} f(\boldsymbol{x}_i, \boldsymbol{\theta})
+\end{equation*}
+\pause
+\begin{align*}
+    \boldsymbol{\theta}_{k+1} &= \boldsymbol{\theta}_k - \gamma \nabla_{\boldsymbol{\theta}} \mathcal{L}(\boldsymbol{\theta}_k)\\
+    &= \boldsymbol{\theta}_k + \frac{2\gamma}{n} \sum_{i=1}^n \left(y_i - f(\boldsymbol{x}_i, \boldsymbol{\theta}_k)\right) \nabla_{\boldsymbol{\theta}} f(\boldsymbol{x}_i, \boldsymbol{\theta}_k)\\
+    &= \boldsymbol{\theta}_k + \tilde{\gamma} \sum_{i=1}^n \hat{\varepsilon}_i(\boldsymbol{\theta}_k) \nabla_{\boldsymbol{\theta}} f(\boldsymbol{x}_i, \boldsymbol{\theta}_k)
+\end{align*}
+\end{frame}
+
+\begin{frame}[standout]
+    \begin{center}
+       Questions?
+    \end{center}
+\end{frame}
+
+\section{Back to Solving Models!}
+
 
 \begin{frame}[standout]
     \begin{center}
