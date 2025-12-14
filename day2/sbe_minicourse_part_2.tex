@@ -112,7 +112,7 @@
         \item What is ML, anyway?\tikz[remember picture,baseline] \node (it1) {};
         \item Causality in High Dimensions\tikz[remember picture,baseline] \node (it2) {};
         \item (Seriously) Heterogeneous Partial Effects\tikz[remember picture,baseline] \node (it3) {};
-        \item Solving Large-Scale General Equilibrium Models\tikz[remember picture,baseline] \node (it4) {};
+        \item Solving Large-Scale Dynamic Models\tikz[remember picture,baseline] \node (it4) {};
     \end{enumerate}
 
     % Decorative braces indicating Today / Tomorrow on the right
@@ -606,11 +606,100 @@ One scheme to minimize $\mathcal{L}(\boldsymbol{\theta})$ is Gradient Descent:
 
 \section{Back to Solving Models!}
 
+\begin{frame}{Big Picture}
+Recall that we need to find $V(\s)$ and $\cc(\s)$ such that:
+\begin{gather*}
+    HJB(\s, \cc, V) \equiv -\rho V(\s) + u(\cc) + \nabla_{\s} V(\s)^\top f(\s, \cc) + \frac{1}{2} \text{tr}\left( g(\s, \cc)^\top\nabla^2_{\s\s} V(\s) g(\s, \cc)  \right)\\
+    HJB(\s, \cc(s), V(\s)) = 0, \quad \forall \s \in \mathcal{S} \subset \R^n \, \text{at the optimum policy}\\
+    \cc(s) = \arg \max_{\cc} \left\{u(\cc) + \nabla_{\s} V(\s)^\top f(\s, \cc) + \frac{1}{2} \text{tr}\left(  g(\s, \cc)^\top \nabla^2_{\s\s} V(\s) g(\s, \cc) \right) \right\}
+\end{gather*}
+\pause
+    \begin{itemize}
+        \item Key insight in \cite{Duarte2024}: approximate $V(\s)$ and $\cc(\s)$ using DNNs;
+        \item $V(\s) = V(\s, \boldsymbol{\theta}_V)$, $\cc(\s) = \cc(\s, \boldsymbol{\theta}_c)$;
+        \item Derivatives of $V(.)$ are super fast to compute using Automatic Differentiation;
+        \pause
+        \item We look for a pair $(\boldsymbol{\theta}_V, \boldsymbol{\theta}_c)$ that solves minimizes the HJB residuals!
+        \item Notation: $HJB(\s, \cc(\s, \boldsymbol{\theta}_c), V(\s, \boldsymbol{\theta}_V)) \equiv HJB(\s, \boldsymbol{\theta}_c, \boldsymbol{\theta}_V)$;
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{The Algorithm}
+    \textbf{Step 1}: sample $I$ points $\{\s_i\}_{i=1}^I$ from the state space $\mathcal{S}$ (for example, uniformly);
+
+    \textbf{Step 2}: Initialize some $(\boldsymbol{\theta}_V^{(0)}, \boldsymbol{\theta}_c^{(0)})$;
+    \pause
+
+    \textbf{Step 3}: If we change $\boldsymbol{\theta}_C$ by a little, the HJB error at $\s_i$ moves by $\nabla_{\boldsymbol{\theta}_c} HJB(\s_i, \boldsymbol{\theta}_c, \boldsymbol{\theta}_V)$. 
+    At iteration $j$, compute:
+    \begin{equation*}
+        \boldsymbol{\theta}_c^{(j)} = \boldsymbol{\theta}_c^{(j-1)} + \frac{\gamma}{I} \left( \sum_{i=1}^I \nabla_{\boldsymbol{\theta}_c} HJB\left(\s_i, \boldsymbol{\theta}_c^{(j-1)}, \boldsymbol{\theta}_V^{(j-1)}\right) \right)
+    \end{equation*}
+    \pause
+
+    \textbf{Step 4}: Define the loss function $\mathcal{L}(\boldsymbol{\theta}_V)$ and compute its gradient:
+    \begin{gather*}
+        \mathcal{L}(\boldsymbol{\theta}_V) \equiv \frac{1}{2I}\sum_{i=1}^I \left( HJB\left(\s_i, \boldsymbol{\theta}_c^{(j)}, \boldsymbol{\theta}_V\right) \right)^2\\
+         \nabla_{\boldsymbol{\theta}_V} \mathcal{L}(\boldsymbol{\theta}_V) = \frac{1}{I} \sum_{i=1}^I HJB\left(\s_i, \boldsymbol{\theta}_c^{(j)}, \boldsymbol{\theta}_V\right) \nabla_{\boldsymbol{\theta}_V} HJB\left(\s_i, \boldsymbol{\theta}_c^{(j)}, \boldsymbol{\theta}_V\right)
+    \end{gather*}
+\end{frame}
+
+\begin{frame}{The Algorithm (continued)}
+    \textbf{Step 5}: Update $\boldsymbol{\theta}_V$ using Gradient Descent:
+    \begin{equation*}
+        \boldsymbol{\theta}_V^{(j)} = \boldsymbol{\theta}_V^{(j-1)} - \eta \nabla_{\boldsymbol{\theta}_V} \mathcal{L}(\boldsymbol{\theta}_V^{(j-1)}) = \boldsymbol{\theta}_V^{(j-1)} - \frac{\eta}{I} \sum_{i=1}^I HJB\left(\s_i, \boldsymbol{\theta}_c^{(j)}, \boldsymbol{\theta}_V^{(j-1)}\right) \nabla_{\boldsymbol{\theta}_V} HJB\left(\s_i, \boldsymbol{\theta}_c^{(j)}, \boldsymbol{\theta}_V^{(j-1)}\right)
+    \end{equation*}
+    \pause
+
+    \textbf{Step 6}: Repeat Steps 3-5 until convergence.
+    \pause
+
+    \vspace{0.3cm}
+    At the end, we have approximations for the value function and policy function:
+    \begin{equation*}
+        V(\s) \approx V(\s, \boldsymbol{\theta}_V^{(*)}), \quad \cc(\s) \approx \cc(\s, \boldsymbol{\theta}_c^{(*)})
+    \end{equation*}
+    \pause
+    \vspace{-0.8cm}
+    \noindent\rule{\linewidth}{0.4pt}
+    
+    \vspace{0.2cm}
+    Summarizing:
+    \begin{itemize}
+        \item DNNs are a rich basis of functions with cheap derivatives and not so many parameters;
+        \item They are an extremely flexible class;
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Wrap-Up}
+    In two days, we covered a lot of ground!
+    \begin{itemize}
+        \item Always think about ML methods an array of \textit{functional bases};
+        \item A bit of LASSO and how to use it when we have many controls
+        \item A bit of Random Forests and how to use them to estimate heterogeneous partial effects;
+        \item A tiny drop of Deep Learning and how to tweak it to solve HJB equations;
+    \end{itemize}
+\pause
+\vspace{1cm}
+    \begin{center}
+        \fbox{\parbox{0.5\textwidth}{
+            \centering
+            \alert{\textbf{Important: I hope you had fun!}}
+        }}
+    \end{center}
+\end{frame}
+
 
 \begin{frame}[standout]
     \begin{center}
-       Thank you!\\
-        See you tomorrow, stay tuned!
+       {\Huge Thank you!} \emoji{folded-hands-light-skin-tone}
+
+       \vspace{0.7cm}
+       Scan below to get in touch!
+       \begin{figure}
+        \centering
+        \includegraphics[width=0.3\textwidth]{../pictures/QR_code.pdf}
+       \end{figure}
     \end{center}
 \end{frame}
 
