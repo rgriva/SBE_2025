@@ -31,6 +31,8 @@
 % TikZ for decorative braces in slides
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathreplacing,positioning,calc}
+\usepackage[normalem]{ulem}
+\renewcommand{\ULthickness}{.20ex}
 
 % ----- Metadata -----
 \title[]{ML in Economics and Finance: Where do We Go Now? - Part I}
@@ -111,15 +113,15 @@
 %---------------- Intro ----------------%
 \begin{frame}{Who is this guy?}
     \begin{itemize}\itemsep1em
-        \item I have just joined \textcolor{FGVBlue}{FGV EPGE} as an Assistant Professor;
-        \item I got my PhD in Finance at \textcolor{KelloggPurple}{Northwestern University};
+        \item Just joined \textcolor{FGVBlue}{FGV EPGE} as an Assistant Professor;
+        \item PhD in Finance from \textcolor{KelloggPurple}{Northwestern University};
         \item Asset Pricing + Macro-Finance + Econometrics;
         \end{itemize}
         \pause
         \vspace{1cm}
         \begin{center}
         \fbox{\parbox{0.9\textwidth}{\centering
-        \alert{I am \textbf{not} an ML developer, but maybe a mildly sophisticated economist consumer}
+        \alert{I am \textbf{not} an ML developer, but maybe a mildly sophisticated consumer}
         }}
         \end{center}
 \end{frame}
@@ -159,14 +161,14 @@
 \begin{frame}{Where do we go now?}
     \begin{itemize}
         \item The Econ/Finance forecasting crowd was really fast in adopting ML...
-        \item But what else? What is worth knowing about ML in Econ and Finance?
+        \item But what else? What is worth knowing about ML in Econ and Finance? What's the frontier?
     \end{itemize}
 \pause
 \vspace{0.5cm}
     \textbf{What I will do}:
     \begin{itemize}
         \item My own economist-crafted definition of ML methods and how to think about them;
-        \item Three very cool agendas where ML can help economists
+        \item Three very cool agendas where ML can help economists;
         \item Causality in HD, seriously heterogeneous treatment effects, and solving large models;
     \end{itemize}
 \pause
@@ -175,7 +177,7 @@
     \begin{itemize}
         \item Teach you how to code;
         \pause
-        \item Pretend I know how to prove the complicated theorems and walk you through proofs;
+        \item Walk you through proofs and be super formal;
         \pause
         \item Lie to you and say you can easily perform any of this in Stata! \emoji{face-with-rolling-eyes} 
     \end{itemize}
@@ -192,7 +194,7 @@
 \textbf{Who is this \textcolor{red}{\underline{not}} for?}
 \begin{itemize}
     \item Super sophisticated economists already deploying these techniques everywhere;
-    \item Hardcore econometricians looking for open theoretical problems;
+    \item Hardcore econometricians looking for \sout{\textit{dark magic}} ultra fancy theorems and proofs;
 \end{itemize}
 \pause
 \vspace{0.5cm}
@@ -240,7 +242,7 @@
 \begin{frame}{What is \textit{Machine Learning}?}
     \begin{itemize}\itemsep0.6em
         \item Different fields = different definitions: CS, Stats, Operations Research, ...
-        \item Many types: Supervised, Unsupervised, Reinforcement Learning, Deep Learning, ...
+        \item Many types: Supervised, Unsupervised, Reinforcement Learning, ...
         \item More buzzwords = better consulting gigs! \emoji{money-mouth-face}
         \pause
         \item Today and tomorrow: \textbf{Supervised Learning};
@@ -330,6 +332,7 @@ Consider an outcome $y_i$, and a set of covariates $\boldsymbol{x}_i$ for $i=1,\
     \end{itemize}
 \end{columns}
 \vspace{0.5cm}
+\pause
 \fbox{\parbox{0.95\textwidth}{\centering
         \textcolor{FGVBlue}{Machine Learning = a \textit{compromise}: richer parametrizations while still computationally feasible in high dimensions.}
         }}
@@ -490,7 +493,7 @@ They proposed the \textbf{Double LASSO} procedure:
 \begin{equation*}
     \sqrt{n}(\hat{\theta}_0 - \theta_0) \xrightarrow{d} \mathcal{N}(0, \sigma^2)
 \end{equation*}
-where $\sigma^2$ is complicated by consistently estimated.
+where $\sigma^2$ is complicated but consistently estimated.
 \pause
 \vspace{0.5cm}
 
