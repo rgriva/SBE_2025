@@ -439,7 +439,7 @@ Under some conditions, $V(\s)$ and $\cc(\s)$ are such that:
     HJB(\s, \cc, V) \equiv -\rho V(\s) + u(\cc) + \nabla_{\s} V(\s)^\top f(\s, \cc) + \frac{1}{2} \text{tr}\left( g(\s, \cc)^\top\nabla^2_{\s\s} V(\s) g(\s, \cc)  \right)\\
     \pause
     HJB(\s, \cc(s), V) = 0, \quad \forall \s \in \R^n \, \text{at the optimum policy}\\
-    \cc(s) = \arg \max_{\cc} u(\cc) + \nabla_{\s} V(\s)^\top f(\s, \cc) + \frac{1}{2} \text{tr}\left( g(\s, \cc) g(\s, \cc)^\top \nabla^2_{\s\s} V(\s) \right)
+    \cc(s) = \arg \max_{\cc} u(\cc) + \nabla_{\s} V(\s)^\top f(\s, \cc) + \frac{1}{2} \text{tr}\left( g(\s, \cc)^\top \nabla^2_{\s\s} V(\s) g(\s, \cc) \right)
 \end{gather*}
 \end{frame}
 
@@ -678,6 +678,7 @@ Recall that we need to find $V(\s)$ and $\cc(\s)$ such that:
         \item A bit of LASSO and how to use it when we have many controls
         \item A bit of Random Forests and how to use them to estimate heterogeneous partial effects;
         \item A tiny drop of Deep Learning and how to tweak it to solve HJB equations;
+        \item \href{https://sites.google.com/site/dejanirhsilva/}{Dejanir Silva} has a full class on this: \href{https://github.com/dejanirsilva/mlce}{https://github.com/dejanirsilva/mlce}
     \end{itemize}
 \pause
 \vspace{1cm}
