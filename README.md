@@ -1,6 +1,6 @@
 # Minicourse @ SBE 2025 -- Machine Learning in Econ and Finance
 
-This is the repository for a minicourse presented at the 47th Meeting of the Brazilian Econometric Society (SBE) in 2025. I will cover a bit of three different agendas/applications of ML to Economics and Finance:
+This is the repository for a minicourse presented at the [47th Meeting of the Brazilian Econometric Society (SBE)](https://www.sbe.org.br/en/encontro/47th-meeting-of-the-brazilian-econometric-society/) in 2025. I will cover a bit of three different agendas/applications of ML to Economics and Finance:
 
 - Causal inference (along the lines of the Double/Debiased ML literature);
 - How to model heterogeneous partial effects with ML methods;
