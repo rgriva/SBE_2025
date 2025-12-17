@@ -33,7 +33,7 @@
 \usetikzlibrary{decorations.pathreplacing,positioning,calc}
 
 % ----- Metadata -----
-\title[]{ML in Economics and Finance: Where do We Go Now? - Part II}
+\title[]{ML in Economics and Finance: Where Do We Go Now? - Part II}
 
 \author[]{
   \textbf{Raul Riva}
@@ -146,6 +146,7 @@ and the \textbf{partial effects}
     \item This is a prediction problem after all!
     \pause
     \item Approach 1: impose a parametric model for $h$, e.g. linear regression. Pros and cons?
+    \pause
     \item Approach 2: use fully nonparametric methods. Pros and cons?
     \pause
     \item The third way is the charm: a bit of structure, a bit of ML!
@@ -182,7 +183,7 @@ Consider the following model:
 \end{frame}
 
 \begin{frame}{How can we balance flexibility and interpretability?}
-\cite{masini_balancing_2025} \emoji{flag-brazil} proposed a middle ground:
+\emoji{flag-brazil} \cite{masini_balancing_2025} \emoji{flag-brazil} proposed some middle ground:
 \begin{equation*}
     h(x, z) = x^\top \beta(z), \qquad \frac{\partial h(x,z)}{\partial x} = \beta(z)
 \end{equation*}
@@ -223,7 +224,7 @@ A \textbf{Random Tree} is a particular way of parametrizing $f$!
 \pause
 \vspace{0.4cm}
 The really complicated part: there are \textit{so many} partitions... how to pick one?
-
+\pause
 \vspace{0.3cm}
 \begin{center}
     \fbox{\parbox{0.9\textwidth}{
@@ -249,11 +250,11 @@ The really complicated part: there are \textit{so many} partitions... how to pic
 Let's say you want to split on feature $X_j$ at point $\delta$:
 \begin{gather*}
     S_1 \equiv \{x \in \R^p: x_j \leq \delta\}, \quad S_2 \equiv \{x \in \R^p: x_j > \delta\}\\
-    \mu_1 \equiv \sum_{i: x_i \in S_1} \frac{Y_i}{n_1}, \quad \mu_2 \equiv \sum_{i: x_i \in S_2} \frac{Y_i}{n_2}
+    \mu_1(\delta) \equiv \sum_{i: x_i \in S_1} \frac{Y_i}{n_1}, \quad \mu_2(\delta) \equiv \sum_{i: x_i \in S_2} \frac{Y_i}{n_2}
 \end{gather*}
 \pause
 \begin{itemize}\itemsep0.4em
-    \item Define $SSR(\delta) \equiv \sum_{i: x_i \in S_1} (Y_i - \mu_1)^2 + \sum_{i: x_i \in S_2} (Y_i - \mu_2)^2$
+    \item Define $SSR(\delta) \equiv \sum_{i: x_i \in S_1} (Y_i - \mu_1(\delta))^2 + \sum_{i: x_i \in S_2} (Y_i - \mu_2(\delta))^2$
     \item Choose $\delta$ to minimize $SSR(\delta) \implies$ this is usually very fast to compute!
     \pause
     \item Repeat this for all features $X_j$ and pick the best one;
@@ -319,8 +320,8 @@ We have a random sample $\{(Y_i, X_i, Z_i)\}_{i=1}^n$ from
 Suppose you want to split at $Z_j \leq \delta$ as before. Then:
 \begin{gather*}
     S_1 \equiv \{z \in \mathbb{R}^p: z_{j} \leq \delta\}, \quad S_2 \equiv \{z \in \mathbb{R}^p: z_{j} > \delta\}\\
-    (\hat{\beta}_1) \equiv \arg\min_{\beta} \sum_{i: Z_{i,j} \in S_1} (Y_i - X_i^\top \beta)^2, \quad (\hat{\beta}_2) \equiv \arg\min_{\beta} \sum_{i: Z_{i,j} \in S_2} (Y_i - X_i^\top \beta)^2\\
-    SSR(\delta) \equiv \sum_{i: Z_{i,j} \in S_1} (Y_i - X_i^\top \hat{\beta}_1)^2 + \sum_{i: Z_{i,j} \in S_2} (Y_i - X_i^\top \hat{\beta}_2)^2
+    (\hat{\beta}_1) \equiv \arg\min_{\beta} \sum_{i: Z_{i} \in S_1} (Y_i - X_i^\top \beta)^2, \quad (\hat{\beta}_2) \equiv \arg\min_{\beta} \sum_{i: Z_{i} \in S_2} (Y_i - X_i^\top \beta)^2\\
+    SSR(\delta) \equiv \sum_{i: Z_{i} \in S_1} (Y_i - X_i^\top \hat{\beta}_1)^2 + \sum_{i: Z_{i} \in S_2} (Y_i - X_i^\top \hat{\beta}_2)^2
 \end{gather*}
 \pause
 Pick $\delta$ to minimize $SSR(\delta)$!
@@ -364,7 +365,6 @@ This algorithm uses \textbf{honest trees}! Similar intuition to cross-fitting.
         \item The dimension of $X_i$ should be small relative to $n$;
         \item The dimension of $Z_i$ cannot be \textit{that} large relative to $n$;
         \item Pointwise inference only;
-        \item It cannot be readily applied to time series and panel data;
         \item It can be computationally demanding in large datasets;
     \end{itemize}
 \end{frame}
@@ -389,11 +389,12 @@ This algorithm uses \textbf{honest trees}! Similar intuition to cross-fitting.
     \begin{itemize}
         \item Dynamic programming/stochastic control everywhere: Macro, Finance, IO, Labor, etc;
         \item Pen and paper won't cut it: we need sophisticated numerical methods;
+        \pause
         \item \underline{Tension}: \alert{the models we can solve} vs \textcolor{FGVBlue}{the ones we \textit{would like} to solve};
         \item Main challenge: computational cost increases exponentially with state space dimension;
         \item Traditional practice: simpler economics, simpler models;
         \pause
-        \item In practice: forget solving models with more than $\approx$ 8-10 state variables;
+        \item In practice: forget solving models with more than $\approx$ 10-15 state variables;
     \end{itemize}
     \vspace{0.6cm}
     \begin{center}
@@ -418,7 +419,9 @@ Let $\s\in \R^n$ be a state vector, $\cc \in \R^m$ be a control vector, and $\uu
             \item Ex: 100 grid points per dimension $\implies$ $10^{2n}$ total points;
             \item Ex: $n=26$, 100 points per dimension $= O(10^{40})$ TB of RAM (AWS $\approx 10^9$ TB);
         \end{itemize}
+        \pause
         \item \textbf{The curse of expectation}: $$\E\left[ V\left(\s' \right) \mid \s,\cc \right] = \int_{u_1} \int_{u_2}\cdots\int_{u_k} V\left( f(\s,\cc(\s),\uu) \right) \phi(\uu)d\uu_1 d\uu_2\cdots d\uu_k $$
+        \pause
         \item \textbf{The curse of optimization}: Given $V(.)$,  $10^{2n}$ optimizations to find $\cc(\s)$;
     \end{itemize}
     
@@ -438,7 +441,7 @@ Under some conditions, $V(\s)$ and $\cc(\s)$ are such that:
 \begin{gather*}
     HJB(\s, \cc, V) \equiv -\rho V(\s) + u(\cc) + \nabla_{\s} V(\s)^\top f(\s, \cc) + \frac{1}{2} \text{tr}\left( g(\s, \cc)^\top\nabla^2_{\s\s} V(\s) g(\s, \cc)  \right)\\
     \pause
-    HJB(\s, \cc(s), V) = 0, \quad \forall \s \in \R^n \, \text{at the optimum policy}\\
+    HJB(\s, \cc(\s), V(\s)) = 0, \quad \forall \s \in \R^n \, \text{at the optimum policy}\\
     \cc(s) = \arg \max_{\cc} u(\cc) + \nabla_{\s} V(\s)^\top f(\s, \cc) + \frac{1}{2} \text{tr}\left( g(\s, \cc)^\top \nabla^2_{\s\s} V(\s) g(\s, \cc) \right)
 \end{gather*}
 \end{frame}
@@ -470,7 +473,7 @@ Under some conditions, $V(\s)$ and $\cc(\s)$ are such that:
 \begin{itemize}
     \item Example for $n=1$:
     \[
-        V(s) = \sum_{k=0}^{K} a_k T_k(s)
+        V(s) = \sum_{k=0}^{K} a_k T_k(s), \quad \text{$\{T_k(.)\}_{k=0}^{K}$ are Chebyshev polynomials}
     \]
     \pause
     \item Derivatives of $V(s)$ are analytically available
@@ -509,7 +512,7 @@ Under some conditions, $V(\s)$ and $\cc(\s)$ are such that:
 
 \vspace{0.8cm}
 
-\cite{Duarte2024}: let's embrace Neural Networks!
+(\emoji{flag-brazil} $\times 3$) \cite{Duarte2024}: let's embrace Neural Networks!
 \vspace{0.4cm}
 \pause
 
