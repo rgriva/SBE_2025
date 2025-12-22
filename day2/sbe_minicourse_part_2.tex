@@ -459,7 +459,7 @@ Under some conditions, $V(\s)$ and $\cc(\s)$ are such that:
     \item Typical approach from engineering: \textbf{Finite Differences} or \textbf{Finite Elements};
     \item Let $n=1$ (scalar state) and an equally spaced grid $\{\s_1, \s_2, \ldots, \s_M\}$. Then:
     \begin{equation*}
-        \frac{dV(s)}{ds} \Big|_{s=s_i} \approx \frac{V(s_{i+1}) - V(s_{i-1})}{2\Delta s}, \quad \frac{d^2V(s)}{ds^2} \Big|_{s=s_i} \approx \frac{V(s_{i+1}) - 2V(s_i) + V(s_{i-1})}{\Delta s^2}
+        \frac{dV(s)}{ds} \Big|_{s=s_i} \approx \frac{V(s_{i+1}) - V(s_{i-1})}{\Delta s}, \quad \frac{d^2V(s)}{ds^2} \Big|_{s=s_i} \approx \frac{V(s_{i+1}) - 2V(s_i) + V(s_{i-1})}{\Delta s^2}
     \end{equation*}
     \pause
     \item Drawback: we need very fine grids to approximate derivatives well;
@@ -554,7 +554,7 @@ Under some conditions, $V(\s)$ and $\cc(\s)$ are such that:
 \end{frame}
 
 \begin{frame}{Does it have good properties?}
-    \cite{Cybenko1989} proved that this basis of functions is rich:
+    \cite{Cybenko1989,Hornik1989,Hornik1991} proved that this basis of functions is rich:
     \begin{theorem}[Universal Approximation]
         Any continuous function on a compact subset of $\mathbb{R}^n$ can be approximated to arbitrary precision by a shallow neural network with any non-polynomial activation function.
     \end{theorem}
